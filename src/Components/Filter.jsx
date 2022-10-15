@@ -10,9 +10,44 @@ import { CartState } from '../Context/Context'
 const Filter = ({prod}) => {
     const [rating, setrating] = useState(0)
     // console.log(prod)
-    const {productState:{
-        byStock,byFastDelivery,sort,byRating
+    const {state:{products},productState:{
+        byStock,byFastDelivery,sorts,byRating,searchQuery
     },productDispatch}=CartState()
+    const {
+        state: { cart },
+        dispatch,
+    } = CartState();
+  
+    const transform =()=>{
+        let sortedProducts = products;
+        console.log(sorts)
+        if(sorts){
+      
+            sortedProducts = sortedProducts.sort((a,b)=>
+               sorts === "lowtohigh" ? (a.price -b.price ): (b.price-a.price )
+            )
+            return sortedProducts
+        }
+       
+     
+        if(!byStock){
+            sortedProducts = sortedProducts.filter((prod)=>prod.inStock)
+        }
+        if(byFastDelivery){
+            sortedProducts = sortedProducts.filter((prod)=>prod.byFastDelivery)
+        }
+        if(byRating){
+            sortedProducts = sortedProducts.filter((prod)=>prod.ratings >=byRating)
+        }
+        if(searchQuery){
+            sortedProducts= sortedProducts.filter((prod)=>{
+                return prod.name.ToLower().includes(searchQuery)
+            })
+            
+        }
+        return sortedProducts
+       
+    }
 
     return (
         <>
@@ -27,7 +62,7 @@ const Filter = ({prod}) => {
                                 type:"SORT_BY_PRICE",
                                 payload:"lowtohigh"
                             })}
-                            checked={sort==="lowtohigh" ? true :false}/>
+                            checked={sorts==="lowtohigh" ? true :false}/>
                             <label>Assending</label>
                         </Box>
                         <Box>
@@ -36,7 +71,7 @@ const Filter = ({prod}) => {
                                 type:"SORT_BY_PRICE",
                                 payload:"hightolow"
                             })}
-                            checked={sort==="hightolow" ? true :false} />
+                            checked={sorts==="hightolow" ? true :false} />
                             <label>dessending</label>
                         </Box>
                         <Box>
@@ -77,7 +112,7 @@ const Filter = ({prod}) => {
                 </Box>
                 <Grid templateColumns='repeat(4,1fr)'   gridGap={"20px"}  border={"1px solid black"} w="80%"  >
                     {
-                        prod.map((elem,index)=>{
+                        transform().map((elem,index)=>{
                           return  <SinglePage elem={elem} key={elem.uuid}/>
                         })
                     }
